@@ -2,6 +2,11 @@
 
 This project provides scripts for building a face feature database from images and running face recognition on videos using DeepFace.
 
+## Dataset
+
+- Youtube Face : https://www.cs.tau.ac.il/~wolf/ytfaces/
+- VFHD : https://liangbinxie.github.io/projects/vfhq/
+
 ## Requirements
 - Python 3.10.18
 - Install dependencies:
