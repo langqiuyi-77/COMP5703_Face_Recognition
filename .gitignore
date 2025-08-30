@@ -1,0 +1,15 @@
+# Ignore Python cache and logs
+Doc/
+__pycache__/
+*.pyc
+*.log
+
+# Ignore face database pickle files
+*.pkl
+
+# Ignore output videos (optional)
+*.mp4
+
+# Do NOT ignore datasets (uncomment if you want to force include)
+!people/
+!VFHQ/
