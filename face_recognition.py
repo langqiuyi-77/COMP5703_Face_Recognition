@@ -1,5 +1,3 @@
-
-"""receive_and_recognize.py"""
 import cv2
 import pickle
 import numpy as np
@@ -7,12 +5,23 @@ from deepface import DeepFace
 import os
 import tensorflow as tf
 from datetime import datetime
+
+
+import time
 import argparse
+import json
+from kafka import KafkaProducer
 
 parser = argparse.ArgumentParser(description="Face recognition on video using a face database.")
 parser.add_argument('--video', type=str, default="./VFHQ/output.mp4", help='Path to the video file')
 parser.add_argument('--db_file', type=str, default="face_db.pkl", help='Path to the face database pickle file')
+
 args = parser.parse_args()
+
+# Setup Kafka producer
+# TODO: Change to your actual IP, do NOT use localhost
+producer = KafkaProducer(bootstrap_servers='100.102.164.179:29092')
+KAFKA_TOPIC = 'Log'
 
 MODEL = "ArcFace"
 DIST_METRIC = "euclidean_l2"
@@ -27,6 +36,7 @@ print("Num GPUs Available: ", len(tf.config.list_physical_devices('GPU')))
 with open(args.db_file, "rb") as f:
     face_db = pickle.load(f)
 
+# cap = cv2.VideoCapture("rtsp://username:password@IP:554/stream")
 cap = cv2.VideoCapture(args.video)
 frame_idx = 0
 
@@ -37,6 +47,7 @@ def l2_normalize(x):
 last_seen = {}  # Record the last frame number each person appeared
 LOG_INTERVAL = SKIP * 2  # If not seen for more than this many frames, count as "newly appeared"
 
+
 while True:
     ret, frame = cap.read()
     if not ret:
@@ -44,8 +55,8 @@ while True:
 
     display_frame = frame.copy()
 
-
     if frame_idx % SKIP == 0:
+        start_time = time.time()
         try:
             results = DeepFace.extract_faces(
                 img_path=frame,
@@ -99,8 +110,20 @@ while True:
                     if frame_idx - last_time >= LOG_INTERVAL:
                         now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                         print(f"[{now}] Detected: {name}, Frame: {frame_idx}, Position: ({x},{y},{w},{h})")
+                        # Send log to Kafka
+                        log_msg = {
+                            "person": name,
+                            "video": args.video,
+                            "frame": frame_idx,
+                            "timestamp": now,
+                            "bbox": {"x": x, "y": y, "w": w, "h": h},
+                            "recognition_time": round(time.time() - start_time, 2)
+                        }
+                        producer.send(KAFKA_TOPIC, json.dumps(log_msg).encode('utf-8'))
                     last_seen[name] = frame_idx
 
+            elapsed = time.time() - start_time
+            print(f"Frame {frame_idx} recognition time: {elapsed:.2f} seconds")
         except Exception as e:
             print(f"Error: {e}")
 

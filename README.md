@@ -7,12 +7,38 @@ This project provides scripts for building a face feature database from images a
 - Youtube Face : https://www.cs.tau.ac.il/~wolf/ytfaces/
 - VFHD : https://liangbinxie.github.io/projects/vfhq/
 
-## Requirements
-- Python 3.10.18
-- Install dependencies:
+## Environment Setup
+
+1. Create and activate the environment using the provided file:
   ```bash
-  pip install deepface opencv-python numpy tensorflow
+  conda env create -f environment.yml
+  conda activate face
   ```
+
+
+## Kafka & Docker Setup
+
+1. **Important:** For external access, you must set the advertised listeners in your `docker-compose.yml`:
+  ```yaml
+  # TODO: Change to your actual IP, do NOT use localhost
+  - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092,EXTERNAL://{your_ip}:29092
+  # Example:
+  - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092,EXTERNAL://100.102.164.179:29092
+  ```
+  - In `face_recognition.py`, use the same IP and port:
+  ```python
+  producer = KafkaProducer(bootstrap_servers='100.102.164.179:29092')
+  ```
+  - Do **not** use `localhost` for external connections.
+
+2. Start Kafka and Kafka UI using Docker Compose:
+  ```bash
+  docker-compose up -d
+  ```
+  - This will start Kafka and expose port 9092 for messaging, and Kafka UI on port 8080 for monitoring.
+  - You can access Kafka UI in your browser at [http://localhost:8080](http://localhost:8080) to view topics and messages.
+
+
 
 ## Usage
 
@@ -26,6 +52,7 @@ python build_face_db.py --db_path ./VFHQ --output vfhq_db.pkl
 - `--db_path`: Path to the folder containing images (jpg, jpeg, png)
 - `--output`: Output pickle file name
 
+
 ### 2. Run Face Recognition on a Video
 Run face recognition using a video and a database:
 
@@ -35,6 +62,26 @@ python face_recognition.py --video ./VFHQ/output.mp4 --db_file vfhq_db.pkl
 ```
 - `--video`: Path to the video file
 - `--db_file`: Path to the face database pickle file
+
+
+### Kafka Log Message Format
+
+Recognition logs are sent to Kafka topic `Log` in JSON format:
+
+```json
+{
+  "person": "03",                // Recognized person name
+  "video": "./VFHQ/output.mp4",   // Video file name
+  "frame": 0,                      // Frame number
+  "timestamp": "2025-09-05 01:32:45", // Recognition timestamp
+  "bbox": {
+    "x": 195, "y": 54, "w": 251, "h": 264 // Face bounding box
+  },
+  "recognition_time": 11.17        // Time taken for recognition (seconds)
+}
+```
+
+You can view these logs in Kafka UI at [http://localhost:8080](http://localhost:8080).
 
 ![tip](tip.gif)
 

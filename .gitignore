@@ -13,3 +13,4 @@ __pycache__/
 # Do NOT ignore datasets (uncomment if you want to force include)
 !people/
 !VFHQ/
+/show_img.ipynb
