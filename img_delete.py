@@ -7,7 +7,7 @@ import random
 root_dir = r"D:/Share/01 Comp5703 Web CapStone/VFHQ"
 
 # Number of images to keep in each subfolder
-keep_num = 5
+keep_num = 1
 
 # Whether to select randomly (True) or keep the first N images after sorting (False)
 random_select = False

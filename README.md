@@ -53,15 +53,23 @@ python build_face_db.py --db_path ./VFHQ --output vfhq_db.pkl
 - `--output`: Output pickle file name
 
 
-### 2. Run Face Recognition on a Video
-Run face recognition using a video and a database:
+### 2. Run Face Recognition on Videos (YAML Config)
+Run face recognition using multiple videos and a database, configured via YAML:
 
 ```bash
-python face_recognition.py --video ./YTFace/output.mp4 --db_file ytface_db.pkl
-python face_recognition.py --video ./VFHQ/output.mp4 --db_file vfhq_db.pkl
+python face_recognition.py --config Conf/config.yaml
 ```
-- `--video`: Path to the video file
-- `--db_file`: Path to the face database pickle file
+- `--config`: Path to the YAML config file
+
+Example `config.yaml`:
+```yaml
+videos:
+  - path: "./YTFace/output.mp4"
+    direction: "in"
+  - path: "./VFHQ/output.mp4"
+    direction: "out"
+db_file: "ytface_db.pkl"
+```
 
 
 ### Kafka Log Message Format

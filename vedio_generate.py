@@ -5,28 +5,31 @@ from pathlib import Path
 import subprocess
 
 # 1. Specify the image directory and output list file
-search_dir = "VFHQ"  # Only search for images under the VFHQ directory
-output_file = "VFHQ/filelist.txt"
+search_dir = "G:/db1/VFHQ"  # Only search for images under the VFHQ directory
+output_file = "G:/db1/VFHQ/filelist.txt"
 ffmpeg_path = "ffmpeg"
-filelist = "VFHQ/filelist.txt"
-output_video = "VFHQ/output.mp4"
+filelist = "G:/db1/VFHQ/filelist.txt"
+output_video = "G:/db1/VFHQ/output.mp4"
 
 # 2. Define a function to extract numbers from file paths for sorting
 # For example, extract ('folder_A', 0.001) from './folder_A/0.001.jpg'
 def get_sort_key(filepath):
     path = Path(filepath)
-    # Get parent folder name and file name
     folder_name = path.parent.name
     file_name = path.name
 
-    # Extract number from file name (assuming file name is just number + extension)
-    # Use regex to match the numeric part
-    match = re.search(r'(\d+\.\d+)|\d+', file_name)
+    # Try to convert folder_name to int for numeric sorting
+    try:
+        folder_num = int(folder_name)
+    except ValueError:
+        folder_num = float('inf')  # Non-numeric folders go last
+
+    match = re.search(r'(\\d+\\.\\d+)|\\d+', file_name)
     if match:
         number = float(match.group())
     else:
-        number = 0 # If no number found, put it at the end
-    return (folder_name, number)
+        number = 0
+    return (folder_num, number)
 
 # 3. Recursively find all png files
 jpg_files = []

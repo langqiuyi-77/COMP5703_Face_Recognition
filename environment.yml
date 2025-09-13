@@ -10,3 +10,4 @@ dependencies:
       - opencv-python
       - numpy==1.23.5
       - kafka-python
+      - pyyaml==6.0.2

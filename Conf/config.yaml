@@ -1,0 +1,6 @@
+videos:
+  # - path: "VFHQ/in.mp4"
+  #   direction: "in"
+  - path: "VFHQ/out.mp4"
+    direction: "out"
+db_file: "face_db.pkl"
